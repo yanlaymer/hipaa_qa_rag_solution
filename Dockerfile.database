@@ -1,0 +1,7 @@
+# Database Dockerfile with pgvector extension
+FROM pgvector/pgvector:pg15
+
+# Copy initialization scripts
+COPY docker/db/init.sql /docker-entrypoint-initdb.d/
+
+# pgvector is already configured in the base image

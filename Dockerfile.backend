@@ -1,0 +1,45 @@
+# Backend Dockerfile for HIPAA QA System
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONPATH=/app
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy dependency files and source code
+COPY pyproject.toml ./
+COPY src/ ./src/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir -e .
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Copy data
+COPY data/ ./data/
+
+# Create non-root user for security
+RUN groupadd -r hipaa && useradd -r -g hipaa hipaa
+RUN chown -R hipaa:hipaa /app
+USER hipaa
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health/live || exit 1
+
+# Expose port
+EXPOSE 8000
+
+# Command to run the application
+CMD ["python", "-m", "src.hipaa_qa.main"]
