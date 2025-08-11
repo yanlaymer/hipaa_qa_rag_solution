@@ -35,7 +35,7 @@ sleep 10
 echo "📥 Checking if data ingestion is needed..."
 if docker-compose exec -T db psql -U postgres -d hipaa_qa -c "SELECT COUNT(*) FROM document_chunks;" 2>/dev/null | grep -q " 0"; then
     echo "📦 No data found. Running ingestion..."
-    docker-compose run --rm backend python /app/scripts/ingest_data.py
+    docker-compose run --rm backend python /app/scripts/ingest_enhanced_data.py
 else
     echo "✅ Data already exists in database"
 fi
